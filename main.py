@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from scraper import scrape_hacker_news
 from jobs_scraper import scrape_all
@@ -16,7 +16,8 @@ def get_news():
 
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
-    jobs = scrape_all()
+	query = request.args.get('query')
+    jobs = scrape_all(query)
     return jsonify({'jobs': jobs})
 
 

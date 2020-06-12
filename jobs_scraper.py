@@ -2,10 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import pprint
 
-query = "java"
 
-
-def scrape_get_on_board():
+def scrape_get_on_board(query):
     res = requests.get(f"https://www.getonbrd.com/jobs-{query}")
     soup = BeautifulSoup(res.text, 'html.parser')
     offers = soup.select('.gb-results-list__item')
@@ -60,7 +58,7 @@ def scrape_get_on_board():
     return gb_jobs
 
 
-def scrape_remoteok():
+def scrape_remoteok(query):
     res = requests.get(f"https://remoteok.io/remote-{query}-jobs")
     soup = BeautifulSoup(res.text, 'html.parser')
     offers = soup.select('.job')[:20]
@@ -86,7 +84,7 @@ def scrape_remoteok():
     return remoteok_jobs
 
 
-def scrape_triple_byte():
+def scrape_triple_byte(query):
     res = requests.get(f"https://triplebyte.com/jobs/t/{query}")
     soup = BeautifulSoup(res.text, 'html.parser')
     offers = soup.select('.job')[:20]
@@ -118,11 +116,11 @@ def scrape_triple_byte():
     return triple_byte_jobs
 
 
-def scrape_all():
+def scrape_all(query):
     jobs = []
-    jobs += scrape_get_on_board()
-    jobs += scrape_remoteok()
-    jobs += scrape_triple_byte()
+    jobs += scrape_get_on_board(query)
+    jobs += scrape_remoteok(query)
+    jobs += scrape_triple_byte(query)
     return jobs
 
 
