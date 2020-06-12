@@ -17,8 +17,8 @@ def get_news():
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
 	query = request.args.get('query')
-    jobs = scrape_all(query)
-    return jsonify({'jobs': jobs})
+	jobs = scrape_all(query)
+	return jsonify({'jobs': jobs})
 
 
 if __name__ == '__main__':
