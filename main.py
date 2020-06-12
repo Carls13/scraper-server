@@ -1,17 +1,12 @@
 from flask import Flask, jsonify
-from decouple import config as config_decouple
 
 from scraper import scrape_hacker_news
 from jobs_scraper import scrape_all
 
+from flask_cors import CORS
+
 app = Flask(__name__)
-
-# enviroment = config['development']
-
-# if config_decouple('PRODUCTION', default=False):
-#     enviroment = config['production']
-
-# app.config.from_object(enviroment)
+CORS(app)
 
 @app.route('/hacker-news', methods=['GET'])
 def get_news():
