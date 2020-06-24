@@ -1,6 +1,63 @@
 import requests
 from bs4 import BeautifulSoup
 import pprint
+from datetime import date as dt, timedelta
+
+
+def monthToNum(shortMonth):
+    return {
+            'Jan' : 1,
+            'Feb' : 2,
+            'Mar' : 3,
+            'Apr' : 4,
+            'May' : 5,
+            'Jun' : 6,
+            'Jul' : 7,
+            'Aug' : 8,
+            'Sep' : 9, 
+            'Oct' : 10,
+            'Nov' : 11,
+            'Dec' : 12
+    }[shortMonth]
+
+
+def format_gb_date(date):
+    month, day = date.split(" ")
+    today = dt.today()
+    year = today.year
+    new_date = dt(year, monthToNum(month), int(day))
+    if new_date > today:
+        new_date = new_date - timedelta(days=365)
+    return new_date.isoformat()
+
+
+def format_remoteok_date(date):
+    months = ['h', 'd', 'mo',  'yr']
+    for month in months:
+        if month in date:
+            amount_before, other = date.split(month)
+            m_start = date.find(month)
+            unit = date[m_start:]
+            break
+    # Decide timedelta
+    if unit == "h":
+        delta = timedelta(hours=int(amount_before))
+    if unit == "d":
+        delta = timedelta(days=int(amount_before))
+    if unit == "mo":
+        delta = timedelta(days=30 * int(amount_before))
+    if unit == "yr":
+        delta = timedelta(days=365 * int(amount_before))
+
+    final_date = dt.today() - delta
+    return final_date.isoformat()
+
+
+def get_triple_byte_date(i):
+    today = dt.today()
+    delta = timedelta(days=i)
+    final_date = today - delta
+    return final_date.isoformat()
 
 
 def scrape_get_on_board(query):
@@ -40,7 +97,7 @@ def scrape_get_on_board(query):
             place = "Remote"
 
         date_container = offers[idx].select(".gb-results-list__date")[0]
-        date = date_container.getText()
+        date = date_container.getText()[1:-1]
 
         # Convert info into dict
         offer_overview = {
@@ -49,7 +106,7 @@ def scrape_get_on_board(query):
             "modality": modality,
             "place": place,
             "link": link,
-            "date": date[1:-1]
+            "date": format_gb_date(date)
         }
 
         gb_jobs.append(offer_overview)
@@ -78,7 +135,7 @@ def scrape_remoteok(query):
             "author": author,
             "place": 'Remote',
             "link": "https://remoteok.io" + link,
-            "date": date
+            "date": format_remoteok_date(date)
         }
         remoteok_jobs.append(offer_overview)
     return remoteok_jobs
@@ -90,7 +147,7 @@ def scrape_triple_byte(query):
     offers = soup.select('.job')[:20]
 
     triple_byte_jobs = []
-
+    i = 0
     for offer in offers:
         first_div = offer.select("div")[1].select("div")[0]
         role_anchor = first_div.select("a")[0]
@@ -109,9 +166,10 @@ def scrape_triple_byte(query):
             "author": author,
             "place": place,
             "link": "https://triplebyte.com" + link,
-            "date": 'Now'}
+            "date": get_triple_byte_date(i)}
 
         triple_byte_jobs.append(offer_overview)
+        i += 1
 
     return triple_byte_jobs
 
@@ -121,7 +179,8 @@ def scrape_all(query):
     jobs += scrape_get_on_board(query)
     jobs += scrape_remoteok(query)
     jobs += scrape_triple_byte(query)
+    jobs = sorted(jobs,  key= lambda k:k['date'], reverse=True)
     return jobs
 
 
-# pprint.pprint(scrape_all())
+pprint.pprint(scrape_all('data-science'))
