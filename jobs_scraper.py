@@ -181,6 +181,3 @@ def scrape_all(query):
     jobs += scrape_triple_byte(query)
     jobs = sorted(jobs,  key= lambda k:k['date'], reverse=True)
     return jobs
-
-
-pprint.pprint(scrape_all('data-science'))
